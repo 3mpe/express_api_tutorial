@@ -14,7 +14,9 @@ export default async (req: Request, resp: Response, next: NextFunction) => {
        validationResult(req).throw();
        let access_token = req.headers.access_token;
        if (typeof access_token === "string") {
-           req.body.user = await decode(access_token, { json: true });
+           const user = await decode(access_token, { json: true });
+           if (user !== null) req.body.user = user;
+           else return resp.status(StatusCode.Forbidden).json();
        }
        next();
    }
