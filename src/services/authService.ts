@@ -12,7 +12,6 @@ authRouter.post(
     '/register',
     oneOf([check('username').exists(), check('password').exists()]),
     async (request: Request, response: Response) => {
-
         try {
             validationResult(request.body).throw();
 

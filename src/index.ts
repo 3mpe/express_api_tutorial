@@ -18,12 +18,12 @@ app.use(json());
 app.use(cors());
 app.use(compression());
 app.use(errorHandlerMiddleware);
-app.use(
-    oneOf([
-        check('access_token').exists()
-    ]),
-    (req, resp, next) => tokenParserMiddleware(req, resp, next)
-);
+// app.use(
+//    oneOf([
+//        check('access_token').exists()
+//    ]),
+//    (req, resp, next) => tokenParserMiddleware(req, resp, next)
+// );
 
 // api
 app.use('/api/user', UserService);

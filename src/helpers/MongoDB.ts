@@ -2,9 +2,10 @@ import mongoose from "mongoose";
 import { DB_URL } from "./../config"
 
 class MongoDB {
-    init(options = { useNewUrlParser: true }) {
+    async init(options = { useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false }) {
         // @ts-ignore
-        mongoose.connect(DB_URL, options);
+        new mongoose.connect(DB_URL, options);
+
 
         mongoose.connection.on('open', () => {
             console.log('MongoDB: Connected');
