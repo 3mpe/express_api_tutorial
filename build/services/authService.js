@@ -8,25 +8,28 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const crypto_1 = require("crypto");
 const jsonwebtoken_1 = require("jsonwebtoken");
 const express_validator_1 = require("express-validator");
 const config_1 = require("./../config");
 const authRouter = express_1.Router();
-authRouter.post('/register', express_validator_1.oneOf([express_validator_1.check('username').exists(), express_validator_1.check('password').exists()]), (request, response) => __awaiter(void 0, void 0, void 0, function* () {
+const User_1 = __importDefault(require("./../Models/User"));
+const StatusCode_1 = __importDefault(require("../helpers/StatusCode"));
+authRouter.post('/register', express_validator_1.oneOf([express_validator_1.check('name').exists(), express_validator_1.check('password').exists()]), (request, response) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         express_validator_1.validationResult(request.body).throw();
-        const salt = crypto_1.randomBytes(config_1.LENGTH).toString('base64');
-        crypto_1.pbkdf2(request.body.toString(), salt, 100000, config_1.LENGTH, config_1.DIGEST, (err, hash) => {
-            if (err)
-                throw err;
-            return response.json({
-                hashed: hash.toString('hex'),
-                salt: salt
-            });
-        });
+        const data = request.body;
+        new User_1.default({ name: data.name, password: data.password })
+            .save()
+            .then(() => {
+            const token = jsonwebtoken_1.sign(data, config_1.SECRET, { expiresIn: '7d' });
+            return response.status(StatusCode_1.default.Success).json({ result: data, token });
+        })
+            .catch((e) => { response.status(StatusCode_1.default.BadRequest).json(e); });
     }
     catch (e) {
         return response.json(e);
@@ -38,17 +41,19 @@ authRouter.post('/login', express_validator_1.oneOf([
     try {
         express_validator_1.validationResult(request.body).throw();
         const data = request.body;
-        crypto_1.pbkdf2(request.body.toString(), data.salt, 10000, length, config_1.DIGEST, (err, hash) => {
+        User_1.default
+            .where('name').equals(data.name)
+            .where('password').equals(data.password)
+            .exec((err, result) => {
             if (err) {
-                console.log(err);
+                return response.status(StatusCode_1.default.BadRequest).json(err);
             }
-            // check if password is active
-            if (hash.toString('hex') === data.hashedPassword) {
-                const token = jsonwebtoken_1.sign({ 'user': data.username, permissions: [] }, config_1.SECRET, { expiresIn: '7d' });
-                response.json({ token });
+            if (result === null) {
+                return response.status(StatusCode_1.default.NoContent).json(err);
             }
             else {
-                response.json({ message: 'Wrong password' });
+                const token = jsonwebtoken_1.sign(result, config_1.SECRET, { expiresIn: '7d' });
+                return response.status(StatusCode_1.default.Success).json({ result, token });
             }
         });
     }

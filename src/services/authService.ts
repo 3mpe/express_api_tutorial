@@ -6,24 +6,26 @@ import {oneOf, check, validationResult, body} from 'express-validator';
 import { DIGEST, SECRET, LENGTH } from "./../config"
 const authRouter: Router = Router();
 
+import User from "./../Models/User";
+import StatusCode from "../helpers/StatusCode";
 
 
 authRouter.post(
     '/register',
-    oneOf([check('username').exists(), check('password').exists()]),
+    oneOf([check('name').exists(), check('password').exists()]),
     async (request: Request, response: Response) => {
         try {
             validationResult(request.body).throw();
 
-            const salt = randomBytes(LENGTH).toString('base64');
-            pbkdf2(request.body.toString(), salt, 100000, LENGTH, DIGEST, (err: any, hash: Buffer) => {
-                if (err) throw err;
+            const data = request.body;
+            new User({ name: data.name,  password: data.password })
+                .save()
+                .then(() => {
+                    const token = sign(data, SECRET, { expiresIn: '7d' });
+                    return response.status(StatusCode.Success).json({ result: data, token });
+                })
+                .catch((e: any) => { response.status(StatusCode.BadRequest).json(e)  });
 
-                return response.json({
-                    hashed: hash.toString('hex'),
-                    salt: salt
-                });
-            });
         } catch (e) {
             return response.json(e);
         }
@@ -37,25 +39,24 @@ authRouter.post(
     ]),
     (request: Request, response: Response) => {
         try {
-           validationResult(request.body).throw();
+            validationResult(request.body).throw();
 
             const data = request.body;
-            pbkdf2(request.body.toString(), data.salt, 10000, length, DIGEST, (err: any, hash: Buffer) => {
-                if (err) {
-                    console.log(err);
-                }
+            User
+                .where('name').equals(data.name)
+                .where('password').equals(data.password)
+                .exec((err: any, result: any) => {
+                    if (err) {
+                        return response.status(StatusCode.BadRequest).json(err);
+                    }
 
-                // check if password is active
-                if (hash.toString('hex') === data.hashedPassword) {
+                    if (result === null) { return response.status(StatusCode.NoContent).json(err); }
+                    else {
+                        const token = sign(result, SECRET, { expiresIn: '7d' });
+                        return response.status(StatusCode.Success).json({ result, token });
+                    }
+                });
 
-                    const token = sign({'user': data.username, permissions: []}, SECRET, { expiresIn: '7d' });
-                    response.json({ token });
-
-                } else {
-                    response.json({message: 'Wrong password'});
-                }
-
-            });
         } catch (e) {
             return response.json(e);
         }

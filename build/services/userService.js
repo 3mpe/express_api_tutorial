@@ -5,9 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userRouter = express_1.Router();
-const User_1 = __importDefault(require("./../Models/User"));
 const StatusCode_1 = __importDefault(require("../helpers/StatusCode"));
 const express_validator_1 = require("express-validator");
+const User_1 = __importDefault(require("./../Models/User"));
 userRouter.get("/", (request, response) => {
     User_1.default
         .find()

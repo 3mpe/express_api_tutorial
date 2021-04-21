@@ -1,9 +1,10 @@
 import { Router, Request, Response } from "express";
 
 const userRouter = Router();
-import User from "./../Models/User"
 import StatusCode from "../helpers/StatusCode";
 import {check, oneOf, validationResult} from "express-validator";
+
+import User from "./../Models/User";
 
 
 userRouter.get(
