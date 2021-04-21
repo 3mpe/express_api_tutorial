@@ -27,7 +27,7 @@ userRouter.post("/", express_validator_1.oneOf([express_validator_1.check('name'
         new User_1.default({ name: data.name, password: data.password })
             .save()
             .then(() => { response.status(StatusCode_1.default.Success).json(); })
-            .catch((e) => { response.json(e); });
+            .catch((e) => { response.status(StatusCode_1.default.BadRequest).json(); });
     }
     catch (e) {
         return response.json(e);

@@ -29,21 +29,19 @@ authRouter.post('/register', express_validator_1.oneOf([express_validator_1.chec
             const token = jsonwebtoken_1.sign(data, config_1.SECRET, { expiresIn: '7d' });
             return response.status(StatusCode_1.default.Success).json({ result: data, token });
         })
-            .catch((e) => { response.status(StatusCode_1.default.BadRequest).json(e); });
+            .catch((e) => { response.status(StatusCode_1.default.BadRequest).json(); });
     }
     catch (e) {
         return response.json(e);
     }
 }));
-authRouter.post('/login', express_validator_1.oneOf([
-    [express_validator_1.check('username').notEmpty(), express_validator_1.check('password').exists()]
-]), (request, response) => {
+authRouter.post('/login', express_validator_1.oneOf([express_validator_1.check('username').notEmpty(), express_validator_1.check('password').exists()]), (request, response) => {
     try {
         express_validator_1.validationResult(request.body).throw();
         const data = request.body;
         User_1.default
-            .where('name').equals(data.name)
-            .where('password').equals(data.password)
+            .where('name', data.name)
+            .where('password', data.password)
             .exec((err, result) => {
             if (err) {
                 return response.status(StatusCode_1.default.BadRequest).json(err);
@@ -52,7 +50,7 @@ authRouter.post('/login', express_validator_1.oneOf([
                 return response.status(StatusCode_1.default.NoContent).json(err);
             }
             else {
-                const token = jsonwebtoken_1.sign(result, config_1.SECRET, { expiresIn: '7d' });
+                const token = jsonwebtoken_1.sign({ name: result.name, password: result.password }, config_1.SECRET, { expiresIn: '7d' });
                 return response.status(StatusCode_1.default.Success).json({ result, token });
             }
         });

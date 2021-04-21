@@ -34,7 +34,7 @@ userRouter.post(
             new User({ name: data.name,  password: data.password })
                 .save()
                 .then(() => { response.status(StatusCode.Success).json(); })
-                .catch((e: any) => { response.json(e)  });
+                .catch((e: any) => { response.status(StatusCode.BadRequest).json()  });
 
         } catch (e) {
             return response.json(e);

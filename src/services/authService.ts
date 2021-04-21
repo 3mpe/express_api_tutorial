@@ -1,9 +1,8 @@
-import { Router, Request, Response, NextFunction } from "express";
-import { randomBytes, pbkdf2 } from 'crypto';
+import { Router, Request, Response } from "express";
 import { sign } from 'jsonwebtoken';
 import {oneOf, check, validationResult, body} from 'express-validator';
 
-import { DIGEST, SECRET, LENGTH } from "./../config"
+import { SECRET } from "./../config"
 const authRouter: Router = Router();
 
 import User from "./../Models/User";
@@ -24,7 +23,7 @@ authRouter.post(
                     const token = sign(data, SECRET, { expiresIn: '7d' });
                     return response.status(StatusCode.Success).json({ result: data, token });
                 })
-                .catch((e: any) => { response.status(StatusCode.BadRequest).json(e)  });
+                .catch((e: any) => { response.status(StatusCode.BadRequest).json()  });
 
         } catch (e) {
             return response.json(e);
@@ -34,17 +33,15 @@ authRouter.post(
 
 authRouter.post(
     '/login',
-    oneOf([
-        [check('username').notEmpty(), check('password').exists()]
-    ]),
+    oneOf([check('username').notEmpty(), check('password').exists()]),
     (request: Request, response: Response) => {
         try {
             validationResult(request.body).throw();
 
             const data = request.body;
             User
-                .where('name').equals(data.name)
-                .where('password').equals(data.password)
+                .where('name', data.name)
+                .where('password', data.password)
                 .exec((err: any, result: any) => {
                     if (err) {
                         return response.status(StatusCode.BadRequest).json(err);
@@ -52,7 +49,7 @@ authRouter.post(
 
                     if (result === null) { return response.status(StatusCode.NoContent).json(err); }
                     else {
-                        const token = sign(result, SECRET, { expiresIn: '7d' });
+                        const token = sign({ name: result.name, password: result.password  }, SECRET, { expiresIn: '7d' });
                         return response.status(StatusCode.Success).json({ result, token });
                     }
                 });

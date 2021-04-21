@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { DB_URL } from "./../config"
 
 class MongoDB {
-    async init(options = { useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false }) {
+    async init(options = { useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false, useCreateIndex: true }) {
         // @ts-ignore
         new mongoose.connect(DB_URL, options);
 

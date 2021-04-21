@@ -15,7 +15,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const mongoose_1 = __importDefault(require("mongoose"));
 const config_1 = require("./../config");
 class MongoDB {
-    init(options = { useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false }) {
+    init(options = { useUnifiedTopology: true, useNewUrlParser: true, useFindAndModify: false, useCreateIndex: true }) {
         return __awaiter(this, void 0, void 0, function* () {
             // @ts-ignore
             new mongoose_1.default.connect(config_1.DB_URL, options);
