@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction, } from "express";
 import { validationResult } from "express-validator";
 import { decode } from 'jsonwebtoken';
+import StatusCode from "../helpers/StatusCode";
 
 export default async (req: Request, resp: Response, next: NextFunction) => {
    try {
@@ -18,6 +19,6 @@ export default async (req: Request, resp: Response, next: NextFunction) => {
        next();
    }
    catch (e) {
-       return resp.json(e)
+       return resp.status(StatusCode.Unauthorized).json(e)
    }
 }
