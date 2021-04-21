@@ -2,15 +2,16 @@ import express from "express";
 import cors from "cors";
 import compression from 'compression';
 import { json } from "body-parser";
+import MongoDB from "./helpers/MongoDB"
 
 const app = express();
-
 
 import { PORT } from "./config";
 import { UserService, AuthService } from './services';
 import { errorHandlerMiddleware, tokenParserMiddleware } from './middlewares';
 import { check, oneOf } from "express-validator";
 
+MongoDB.init() // mongoose init
 
 // middleware
 app.use(json());
